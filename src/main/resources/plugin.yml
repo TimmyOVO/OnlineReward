@@ -1,0 +1,5 @@
+name: OnlineReward
+version: @version@
+main: com.github.timmyovo.OnlineReward
+depend: [UltraCore,PlaceholderAPI]
+authors: [TimmyOVO]

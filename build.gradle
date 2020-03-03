@@ -1,0 +1,41 @@
+plugins {
+    id "io.ebean" version "12.1.11"
+}
+
+apply plugin: 'java'
+
+group = pluginGroup
+version = pluginVersion
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+repositories {
+    mavenCentral()
+    maven { url 'http://repo.extendedclip.com/content/repositories/placeholderapi/'}
+    maven { url 'https://jitpack.io' }
+    maven {
+        name = 'papermc-repo'
+        url = 'https://papermc.io/repo/repository/maven-public/'
+    }
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/groups/public/'
+    }
+}
+
+dependencies {
+    compile 'com.github.TimmyOVO.UltraCore:UltraCore-Bukkit:-SNAPSHOT'
+    compile 'com.destroystokyo.paper:paper-api:1.12.2-R0.1-SNAPSHOT'
+    compile group: 'org.projectlombok', name: 'lombok', version: '1.18.2'
+    compile group: 'me.clip', name: 'placeholderapi', version: '2.9.0'
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.2'
+}
+
+import org.apache.tools.ant.filters.ReplaceTokens
+
+processResources {
+    from(sourceSets.main.resources.srcDirs) {
+        filter ReplaceTokens, tokens: [version: version]
+    }
+}
