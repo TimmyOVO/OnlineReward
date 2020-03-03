@@ -16,6 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
 @Getter
@@ -34,7 +35,7 @@ public class OnlineReward extends JavaPlugin implements PluginInstance {
         instance = this;
 
         new ConfigurationManager(this)
-                .registerConfiguration("generalConfiguration", () -> new GeneralConfiguration(ImmutableBiMap.of(20, "")))
+                .registerConfiguration("generalConfiguration", () -> new GeneralConfiguration(ImmutableBiMap.of(20, Arrays.asList("*kill all"))))
                 .init(getClass(), this)
                 .start();
         try {
@@ -65,25 +66,36 @@ public class OnlineReward extends JavaPlugin implements PluginInstance {
                         commandSender.sendMessage("/ol tier");
                         return true;
                     }
-                    int tier = Integer.parseInt(args[0]);
+                    int tier = 0;
+                    try {
+                        tier = Integer.parseInt(args[0]);
+                    } catch (NumberFormatException ignored) {
+
+                    }
                     Player player = (Player) commandSender;
+                    int finalTier = tier;
                     newTask(() -> {
-                        if (hasReachTier(player, tier)) {
-                            if (isRewarded(player, tier)) {
+                        if (hasReachTier(player, finalTier)) {
+                            if (isRewarded(player, finalTier)) {
                                 commandSender.sendMessage("已经领取过了");
                                 return;
                             }
-                            commandSender.sendMessage("成功领取");
-                            markAsRewarded(player, tier);
-                            String command = getGeneralConfiguration().getCommandsMap()
-                                    .get(tier);
-                            command = PlaceholderAPI.setPlaceholders(player, command);
-                            if (command.startsWith("*")) {
-                                command = command.substring(1);
-                                getServer().dispatchCommand(getServer().getConsoleSender(), command);
+                            List<String> commands = getGeneralConfiguration().getCommandsMap()
+                                    .get(finalTier);
+                            if (commands == null) {
                                 return;
                             }
-                            getServer().dispatchCommand(player, command);
+                            commandSender.sendMessage("成功领取");
+                            markAsRewarded(player, finalTier);
+                            commands.forEach(command -> {
+                                command = PlaceholderAPI.setPlaceholders(player, command);
+                                if (command.startsWith("*")) {
+                                    command = command.substring(1);
+                                    getServer().dispatchCommand(getServer().getConsoleSender(), command);
+                                    return;
+                                }
+                                getServer().dispatchCommand(player, command);
+                            });
                         } else {
                             commandSender.sendMessage("在线时间不足");
                         }
